@@ -1,0 +1,4 @@
+run the sql on your workbench, first create tables -> createPSM -> insertdata
+it works for me
+then copy the web files into your "my_web_files"
+any other problem -> figure it out

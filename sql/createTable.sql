@@ -1,0 +1,103 @@
+-- 1. DROP EXISTING TABLES (Reverse order of dependencies)
+DROP TABLE IF EXISTS ProductHistory;
+DROP TABLE IF EXISTS OrderItems;
+DROP TABLE IF EXISTS CartItems;
+DROP TABLE IF EXISTS Orders;
+DROP TABLE IF EXISTS Carts;
+DROP TABLE IF EXISTS Products;
+DROP TABLE IF EXISTS Categories;
+DROP TABLE IF EXISTS Customers;
+DROP TABLE IF EXISTS Employees;
+
+-- 2. CREATE TABLES
+CREATE TABLE Employees (
+    EmployeeID INT AUTO_INCREMENT PRIMARY KEY,
+    Username VARCHAR(50) NOT NULL UNIQUE,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    PasswordHash CHAR(64) NOT NULL,
+    MustUpdatePassword BOOLEAN DEFAULT TRUE
+);
+
+CREATE TABLE Categories (
+    Name VARCHAR(100) PRIMARY KEY,
+    Description TEXT
+);
+
+CREATE TABLE Products (
+    ProductID INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(150) NOT NULL,
+    CategoryName VARCHAR(100) NOT NULL,
+    Description TEXT,
+    Price DECIMAL(10,2) NOT NULL,
+    Threshold INT NOT NULL,
+    Stock INT NOT NULL,
+    Image VARCHAR(255),
+    Status ENUM('Active','Discontinued') DEFAULT 'Active',
+    FOREIGN KEY (CategoryName) REFERENCES Categories(Name) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE Customers (
+    CustomerID INT AUTO_INCREMENT PRIMARY KEY,
+    Username VARCHAR(50) NOT NULL UNIQUE,
+    FirstName VARCHAR(50) NOT NULL,
+    LastName VARCHAR(50) NOT NULL,
+    Email VARCHAR(100) NOT NULL UNIQUE,
+    PasswordHash CHAR(64) NOT NULL,
+    ShippingAddress TEXT NOT NULL
+);
+
+CREATE TABLE Carts (
+    CartID INT AUTO_INCREMENT PRIMARY KEY,
+    CustomerID INT NOT NULL,
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE CartItems (
+    CartID INT,
+    ProductID INT,
+    Quantity INT NOT NULL,
+    PRIMARY KEY (CartID, ProductID),
+    FOREIGN KEY (CartID) REFERENCES Carts(CartID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON UPDATE CASCADE ON DELETE CASCADE
+);
+
+CREATE TABLE Orders (
+    OrderID INT AUTO_INCREMENT PRIMARY KEY,
+    CustomerID INT NOT NULL,
+    OrderDate TIMESTAMP NOT NULL,
+    Status VARCHAR(50) NOT NULL,
+    TotalDollars DECIMAL(10, 2) NOT NULL,
+    FOREIGN KEY (CustomerID) REFERENCES Customers(CustomerID) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE OrderItems (
+    OrderID INT,
+    ProductID INT,
+    Quantity INT NOT NULL,
+    PriceAtOrder DECIMAL(10, 2) NOT NULL,
+    PRIMARY KEY (OrderID, ProductID),
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON UPDATE CASCADE ON DELETE RESTRICT
+);
+
+CREATE TABLE ProductHistory (
+    HistoryID INT PRIMARY KEY AUTO_INCREMENT,  
+    ProductID INT NOT NULL,
+    Action ENUM('INSERT', 'UPDATE', 'DELETE') NOT NULL,
+    WhoID INT,  -- Changed to INT to match the new EmployeeID/CustomerID types
+    Timestamp DATETIME DEFAULT CURRENT_TIMESTAMP,
+    Details TEXT,
+    OrderID INT,
+    FOREIGN KEY (ProductID) REFERENCES Products(ProductID) ON UPDATE CASCADE ON DELETE CASCADE,
+    FOREIGN KEY (OrderID) REFERENCES Orders(OrderID) ON UPDATE CASCADE ON DELETE SET NULL
+);
+
+SELECT * FROM Employees;
+SELECT * FROM Customers;
+SELECT * FROM Categories;
+SELECT * FROM Products;
+SELECT * FROM Orders;
+SELECT * FROM OrderItems;
+SELECT * FROM Carts;
+SELECT * FROM CartItems;
+SELECT * FROM ProductHistory;

@@ -1,0 +1,1 @@
+you have to change the db file with your credentials, and i think that only changing the path on the variable $config on db.php should work
